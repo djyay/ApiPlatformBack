@@ -18,7 +18,7 @@ use App\ApiResource\State\UserCreateProcessor;
     operations: [
         new Get(),
         new GetCollection(),
-        new Post(input: UserDto::class, processor: UserCreateProcessor::class)
+        new Post(uriTemplate: 'create/user', input: UserDto::class, processor: UserCreateProcessor::class)
     ]
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
