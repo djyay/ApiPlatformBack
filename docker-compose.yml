@@ -1,0 +1,72 @@
+version: '3'
+services:
+  apache:
+    build: .docker/apache
+    container_name: allanBack_apache
+    ports:
+      - 80:80
+    volumes:
+      - .docker/config/vhosts:/etc/apache2/sites-enabled
+      - .:/home/wwwroot/allanBack
+    depends_on:
+      - php
+
+  db:
+    image: mariadb:latest
+    container_name: sf4allanBack_mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: sfallanBack_myadmin
+    links:
+      - "db:db"
+    environment:
+      MYSQL_USERNAME: root
+      MYSQL_ROOT_PASSWORD: root
+    restart: always
+    ports:
+      - "8282:80"
+    volumes:
+      - "/sessions"
+
+  php:
+    build: .docker/php
+    container_name: allanBack_php
+    volumes:
+      - .:/home/wwwroot/allanBack
+    environment:
+      - maildev_host=allanBack_maildev
+    depends_on:
+      - db
+# Retirez ou commentez la section suivante si vous n'utilisez pas PostgreSQL
+#  database:
+#    image: postgres:${POSTGRES_VERSION:-15}-alpine
+#    environment:
+#      POSTGRES_DB: ${POSTGRES_DB:-app}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
+#      POSTGRES_USER: ${POSTGRES_USER:-app}
+#    volumes:
+#      - database_data:/var/lib/postgresql/data:rw
+
+###> doctrine/doctrine-bundle ###
+  database:
+    image: postgres:${POSTGRES_VERSION:-15}-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+      # You should definitely change the password in production
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+    volumes:
+      - database_data:/var/lib/postgresql/data:rw
+      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
+      # - ./docker/db/data:/var/lib/postgresql/data:rw
+###< doctrine/doctrine-bundle ###
+
+volumes:
+###> doctrine/doctrine-bundle ###
+  database_data:
+###< doctrine/doctrine-bundle ###
